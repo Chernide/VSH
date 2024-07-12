@@ -1,9 +1,11 @@
 """"V(vega) Shell Main File."""
 
 import argparse
+import os
+import pathlib
 import sys
 
-from utils.database import config
+from utils.database import database_utils
 
 def parse_args(args: str) -> dict:
     """Parsing CLI args.
@@ -42,14 +44,20 @@ def print_help_msg():
 def main():
     """Main Loop Execution"""
     args = parse_args(sys.argv[1:])
-    user = args['user']
-    db_config = config.load_config()
-    db_connection = config.connect(db_config)
+    username = args['user']
+    db_config = database_utils.load_config()
+    db_connection = database_utils.connect(db_config)
     iter = 0
+    pwd = pathlib.Path(os.getcwd())
     while True:
-        if not iter:
-            print(f'Welcome to VSH, {user}')
-        cmd = input('> ')
+        if iter == 0:
+            valid, row = database_utils.check_user(db_connection, username)
+            if valid:
+                print(f'Welcome back to VSH, {username}. Reseting your pwd...')
+                pwd = pathlib.Path(row[1])
+                os.chdir(pwd)
+                print(os.listdir(pwd))
+        cmd = input(f'{pwd}> ')
         if cmd == 'exit':
             sys.exit(0)
         elif cmd == 'help':

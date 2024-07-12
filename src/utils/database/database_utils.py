@@ -4,6 +4,22 @@ import psycopg2
 
 from configparser import ConfigParser
 
+def check_user(conn, username: str) -> tuple[bool, dict]:
+    """Checks if the user is in the database
+
+    Args:
+        conn:
+            Database connnection.
+        username:
+            User that is being looked up.
+    """
+    with conn.cursor() as cur:
+        cur.execute(f'SELECT * FROM users where username = \'{username}\'')
+        row = cur.fetchone()
+        if row is not None:
+            return (True, row)
+        return (False, row)
+
 def load_config(filename: str = 'database.ini', section: str ='postgresql') -> dict:
     """Read and load the data stored in the ini file.
 
